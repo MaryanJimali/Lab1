@@ -1,0 +1,801 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/qgis2web.css"><link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <style>
+        #map {
+	    position: absolute;
+	    top: 165px;
+	    left: 7px;
+	    right: 7px;
+	    bottom: 0;
+            width: 800px;
+            height: 400px;
+        }
+	#range {
+			width: 100%;
+		}
+        </style>
+        <title>GEO641 Lab1</title>
+	
+    </head>
+	<h2>GEO641 Lab1 Toronto Vulnerability</h2>
+
+	<p>Toronto's Neighbourhoods are characterized by....</p>
+	<p>Swipe between layers</p>
+	<link rel="stylesheet" href="http://leaflet-cdn.s3.amazonaws.com/build/master/leaflet.css" />
+	<script src="http://leaflet-cdn.s3.amazonaws.com/build/master/leaflet.js"></script>
+
+    </head>
+    <body>
+
+	<div id="map"></div>
+	<input id="range" type="range" min="0" max="1.0" step="any" />
+
+	<script type="text/javascript" src="http://leafletjs.com/examples/us-states.js"></script>
+	<script type="text/javascript">
+
+		var map = L.map('map').setView([37.8, -96], 4);
+
+		L.tileLayer('http://{s}.tiles.mapbox.com/v3/examples.map-20v6611k/{z}/{x}/{y}.png', {
+			attribution: '<a href="https://www.mapbox.com/about/maps/">Terms &amp; Feedback</a>'
+		}).addTo(map);
+
+		map.attributionControl.addAttribution('Population data &copy; <a href="http://census.gov/">US Census Bureau</a>');
+
+
+		// get color depending on population density value
+		function getColor(d) {
+			return d > 1000 ? '#800026' :
+				   d > 500  ? '#BD0026' :
+				   d > 200  ? '#E31A1C' :
+				   d > 100  ? '#FC4E2A' :
+				   d > 50   ? '#FD8D3C' :
+				   d > 20   ? '#FEB24C' :
+				   d > 10   ? '#FED976' :
+							  '#FFEDA0';
+		}
+
+		var defaultStyle = {
+			weight: 2,
+			opacity: 1,
+			color: 'white',
+			dashArray: '3',
+			fillOpacity: 1
+		};
+
+		function style(feature) {
+			return L.extend({}, defaultStyle, {
+				fillColor: getColor(feature.properties.density)
+			});
+		}
+
+		function style2(feature) {
+			var c = getColor(feature.properties.density);
+			return L.extend({}, defaultStyle, {
+				fillColor: '#' + c.substr(5, 2) + c.substr(3, 2) + c.substr (1, 2),
+				dashArray: null
+			});
+		}
+
+		function highlightFeature(e) {
+			e.layer.setStyle({
+				weight: 5,
+				color: 'yellow',
+				dashArray: ''
+			});
+
+			if (!L.Browser.ie) {
+				e.layer.bringToFront();
+			}
+		}
+
+		function resetHighlight(e) {
+			e.target.resetStyle(e.layer);
+		}
+
+		var events = {
+			mouseover: highlightFeature,
+			mouseout: resetHighlight
+		};
+
+
+		var panes = map.getPanes(),
+			pane = panes.altPane = L.DomUtil.create('div', 'leaflet-overlay-pane'),
+			svg = L.svg({pane: 'altPane'});
+
+		panes.objectsPane.insertBefore(pane, panes.markerPane);
+
+		var geojson = L.geoJson(statesData, {style: style}).on(events).addTo(map);
+		var geojson2 = L.geoJson(statesData, {style: style2, renderer: svg}).on(events).addTo(map);
+
+
+		var range = document.getElementById('range');
+
+		function clip() {
+			var nw = map.containerPointToLayerPoint([0, 0]),
+				se = map.containerPointToLayerPoint(map.getSize()),
+				clipX = nw.x + (se.x - nw.x) * range.value;
+
+			panes.overlayPane.style.clip = 'rect(' + [nw.y, se.x, se.y, clipX].join('px,') + 'px)';
+			pane.style.clip              = 'rect(' + [nw.y, clipX, se.y, nw.x].join('px,') + 'px)';
+		}
+
+		range['oninput' in range ? 'oninput' : 'onchange'] = clip;
+		map.on('move', clip, svg);
+		clip();
+
+	</script>
+
+    <body>
+
+        <div id="map">
+        </div>
+
+<p>.</p>
+<p>.</p>
+<p>.</p>
+<p>.</p>
+<p>.</p>
+<p>.</p>
+<p>.</p>
+<p>.</p>
+<p>.</p>
+<p>.</p>
+<p>.</p>
+<p>Author:Maryan Jimali, Data Source: City of Toronto, OSM.</p>
+
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="data/SocialHousingRGI_1.js"></script>
+        <script src="data/HealthyFoodIndex_2.js"></script>
+        <script src="data/UnemploymentRate_3.js"></script>
+        <script src="data/PopulationDensity_4.js"></script>
+        <script src="data/VulnerabilityScore_5.js"></script>
+        <script>
+        var map = L.map('map', {
+            zoomControl:true, maxZoom:28, minZoom:1
+        }).fitBounds([[43.441159638659144,-79.72873282262424],[43.864679707030604,-78.96258589785752]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+        }
+        map.createPane('pane_OSMStandard_0');
+        map.getPane('pane_OSMStandard_0').style.zIndex = 400;
+        var layer_OSMStandard_0 = L.tileLayer('http://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            pane: 'pane_OSMStandard_0',
+            opacity: 1.0,
+            attribution: '<a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors, CC-BY-SA</a>',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 19
+        });
+        layer_OSMStandard_0;
+        map.addLayer(layer_OSMStandard_0);
+        function pop_SocialHousingRGI_1(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">Name</th>\
+                        <td>' + (feature.properties['Name'] !== null ? autolinker.link(feature.properties['Name'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Population Density</th>\
+                        <td>' + (feature.properties['Population'] !== null ? autolinker.link(feature.properties['Population'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Unemployment Rate</th>\
+                        <td>' + (feature.properties['Unemployme'] !== null ? autolinker.link(feature.properties['Unemployme'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+			<th scope="row">Healthy Food Index</th>\
+                        <td colspan="2">' + (feature.properties['Healthy'] !== null ? autolinker.link(feature.properties['Healthy'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Social Housing RGI</th>\
+                        <td>' + (feature.properties['Housing'] !== null ? autolinker.link(feature.properties['Housing'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Score</th>\
+                        <td>' + (feature.properties['Score'] !== null ? autolinker.link(feature.properties['Score'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+        }
+
+        function style_SocialHousingRGI_1_0(feature) {
+            if (feature.properties['Housing'] >= 0.000000 && feature.properties['Housing'] <= 0.200000 ) {
+                return {
+                pane: 'pane_SocialHousingRGI_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,255,255,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Housing'] >= 0.200000 && feature.properties['Housing'] <= 0.400000 ) {
+                return {
+                pane: 'pane_SocialHousingRGI_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,191,191,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Housing'] >= 0.400000 && feature.properties['Housing'] <= 0.600000 ) {
+                return {
+                pane: 'pane_SocialHousingRGI_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,128,128,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Housing'] >= 0.600000 && feature.properties['Housing'] <= 0.800000 ) {
+                return {
+                pane: 'pane_SocialHousingRGI_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,64,64,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Housing'] >= 0.800000 && feature.properties['Housing'] <= 1.000000 ) {
+                return {
+                pane: 'pane_SocialHousingRGI_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,0,0,1.0)',
+                interactive: true,
+            }
+            }
+        }
+        map.createPane('pane_SocialHousingRGI_1');
+        map.getPane('pane_SocialHousingRGI_1').style.zIndex = 401;
+        map.getPane('pane_SocialHousingRGI_1').style['mix-blend-mode'] = 'normal';
+        var layer_SocialHousingRGI_1 = new L.geoJson(json_SocialHousingRGI_1, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_SocialHousingRGI_1',
+            layerName: 'layer_SocialHousingRGI_1',
+            pane: 'pane_SocialHousingRGI_1',
+            onEachFeature: pop_SocialHousingRGI_1,
+            style: style_SocialHousingRGI_1_0,
+        });
+        bounds_group.addLayer(layer_SocialHousingRGI_1);
+        map.addLayer(layer_SocialHousingRGI_1);
+        function pop_HealthyFoodIndex_2(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">Name</th>\
+                        <td>' + (feature.properties['Name'] !== null ? autolinker.link(feature.properties['Name'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Population Density</th>\
+                        <td>' + (feature.properties['Population'] !== null ? autolinker.link(feature.properties['Population'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Unemployment Rate</th>\
+                        <td>' + (feature.properties['Unemployme'] !== null ? autolinker.link(feature.properties['Unemployme'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Healthy Food Index</th>\
+                        <td>' + (feature.properties['Healthy'] !== null ? autolinker.link(feature.properties['Healthy'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Social Housing RGI</th>\
+                        <td>' + (feature.properties['Housing'] !== null ? autolinker.link(feature.properties['Housing'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Score'] !== null ? autolinker.link(feature.properties['Score'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+        }
+
+        function style_HealthyFoodIndex_2_0(feature) {
+            if (feature.properties['Healthy'] >= 0.000000 && feature.properties['Healthy'] <= 0.200000 ) {
+                return {
+                pane: 'pane_HealthyFoodIndex_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,255,255,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Healthy'] >= 0.200000 && feature.properties['Healthy'] <= 0.400000 ) {
+                return {
+                pane: 'pane_HealthyFoodIndex_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,191,191,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Healthy'] >= 0.400000 && feature.properties['Healthy'] <= 0.600000 ) {
+                return {
+                pane: 'pane_HealthyFoodIndex_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,128,128,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Healthy'] >= 0.600000 && feature.properties['Healthy'] <= 0.800000 ) {
+                return {
+                pane: 'pane_HealthyFoodIndex_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,64,64,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Healthy'] >= 0.800000 && feature.properties['Healthy'] <= 1.000000 ) {
+                return {
+                pane: 'pane_HealthyFoodIndex_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,0,0,1.0)',
+                interactive: true,
+            }
+            }
+        }
+        map.createPane('pane_HealthyFoodIndex_2');
+        map.getPane('pane_HealthyFoodIndex_2').style.zIndex = 402;
+        map.getPane('pane_HealthyFoodIndex_2').style['mix-blend-mode'] = 'normal';
+        var layer_HealthyFoodIndex_2 = new L.geoJson(json_HealthyFoodIndex_2, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_HealthyFoodIndex_2',
+            layerName: 'layer_HealthyFoodIndex_2',
+            pane: 'pane_HealthyFoodIndex_2',
+            onEachFeature: pop_HealthyFoodIndex_2,
+            style: style_HealthyFoodIndex_2_0,
+        });
+        bounds_group.addLayer(layer_HealthyFoodIndex_2);
+        map.addLayer(layer_HealthyFoodIndex_2);
+        function pop_UnemploymentRate_3(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">Name</th>\
+                        <td>' + (feature.properties['Name'] !== null ? autolinker.link(feature.properties['Name'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Population Density</th>\
+                        <td>' + (feature.properties['Population'] !== null ? autolinker.link(feature.properties['Population'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Unemployment Rate</th>\
+                        <td>' + (feature.properties['Unemployme'] !== null ? autolinker.link(feature.properties['Unemployme'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Healthy Food Index</th>\
+                        <td>' + (feature.properties['Healthy'] !== null ? autolinker.link(feature.properties['Healthy'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Social Housing RGI</th>\
+                        <td>' + (feature.properties['Housing'] !== null ? autolinker.link(feature.properties['Housing'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Score</th>\
+                        <td>' + (feature.properties['Score'] !== null ? autolinker.link(feature.properties['Score'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+        }
+
+        function style_UnemploymentRate_3_0(feature) {
+            if (feature.properties['Unemployme'] >= 0.000000 && feature.properties['Unemployme'] <= 0.200000 ) {
+                return {
+                pane: 'pane_UnemploymentRate_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,255,255,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Unemployme'] >= 0.200000 && feature.properties['Unemployme'] <= 0.400000 ) {
+                return {
+                pane: 'pane_UnemploymentRate_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,191,191,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Unemployme'] >= 0.400000 && feature.properties['Unemployme'] <= 0.600000 ) {
+                return {
+                pane: 'pane_UnemploymentRate_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,128,128,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Unemployme'] >= 0.600000 && feature.properties['Unemployme'] <= 0.800000 ) {
+                return {
+                pane: 'pane_UnemploymentRate_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,64,64,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Unemployme'] >= 0.800000 && feature.properties['Unemployme'] <= 1.000000 ) {
+                return {
+                pane: 'pane_UnemploymentRate_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,0,0,1.0)',
+                interactive: true,
+            }
+            }
+        }
+        map.createPane('pane_UnemploymentRate_3');
+        map.getPane('pane_UnemploymentRate_3').style.zIndex = 403;
+        map.getPane('pane_UnemploymentRate_3').style['mix-blend-mode'] = 'normal';
+        var layer_UnemploymentRate_3 = new L.geoJson(json_UnemploymentRate_3, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_UnemploymentRate_3',
+            layerName: 'layer_UnemploymentRate_3',
+            pane: 'pane_UnemploymentRate_3',
+            onEachFeature: pop_UnemploymentRate_3,
+            style: style_UnemploymentRate_3_0,
+        });
+        bounds_group.addLayer(layer_UnemploymentRate_3);
+        map.addLayer(layer_UnemploymentRate_3);
+        function pop_PopulationDensity_4(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">Name</th>\
+                        <td>' + (feature.properties['Name'] !== null ? autolinker.link(feature.properties['Name'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Population Density</th>\
+                        <td>' + (feature.properties['Population'] !== null ? autolinker.link(feature.properties['Population'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Unemployment Rate</th>\
+                        <td>' + (feature.properties['Unemployme'] !== null ? autolinker.link(feature.properties['Unemployme'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">HealthyFood Index</th>\
+                        <td>' + (feature.properties['Healthy'] !== null ? autolinker.link(feature.properties['Healthy'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Social Housing RGI</th>\
+                        <td>' + (feature.properties['Housing'] !== null ? autolinker.link(feature.properties['Housing'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Score</th>\
+                        <td>' + (feature.properties['Score'] !== null ? autolinker.link(feature.properties['Score'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+        }
+
+        function style_PopulationDensity_4_0(feature) {
+            if (feature.properties['Population'] >= 0.000000 && feature.properties['Population'] <= 0.046990 ) {
+                return {
+                pane: 'pane_PopulationDensity_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,255,255,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Population'] >= 0.046990 && feature.properties['Population'] <= 0.072326 ) {
+                return {
+                pane: 'pane_PopulationDensity_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,191,191,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Population'] >= 0.072326 && feature.properties['Population'] <= 0.114175 ) {
+                return {
+                pane: 'pane_PopulationDensity_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,128,128,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Population'] >= 0.114175 && feature.properties['Population'] <= 0.160464 ) {
+                return {
+                pane: 'pane_PopulationDensity_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,64,64,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Population'] >= 0.160464 && feature.properties['Population'] <= 1.000000 ) {
+                return {
+                pane: 'pane_PopulationDensity_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,0,0,1.0)',
+                interactive: true,
+            }
+            }
+        }
+        map.createPane('pane_PopulationDensity_4');
+        map.getPane('pane_PopulationDensity_4').style.zIndex = 404;
+        map.getPane('pane_PopulationDensity_4').style['mix-blend-mode'] = 'normal';
+        var layer_PopulationDensity_4 = new L.geoJson(json_PopulationDensity_4, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_PopulationDensity_4',
+            layerName: 'layer_PopulationDensity_4',
+            pane: 'pane_PopulationDensity_4',
+            onEachFeature: pop_PopulationDensity_4,
+            style: style_PopulationDensity_4_0,
+        });
+        bounds_group.addLayer(layer_PopulationDensity_4);
+        map.addLayer(layer_PopulationDensity_4);
+        function pop_VulnerabilityScore_5(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">Name</th>\
+                        <td>' + (feature.properties['Name'] !== null ? autolinker.link(feature.properties['Name'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Population Density</th>\
+                        <td>' + (feature.properties['Population'] !== null ? autolinker.link(feature.properties['Population'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Unemployment Rate</th>\
+                        <td>' + (feature.properties['Unemployme'] !== null ? autolinker.link(feature.properties['Unemployme'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Healthy Food Index</th>\
+                        <td>' + (feature.properties['Healthy'] !== null ? autolinker.link(feature.properties['Healthy'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Social Housing RGI</th>\
+                        <td>' + (feature.properties['Housing'] !== null ? autolinker.link(feature.properties['Housing'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Score</th>\
+                        <td>' + (feature.properties['Score'] !== null ? autolinker.link(feature.properties['Score'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+        }
+
+        function style_VulnerabilityScore_5_0(feature) {
+            if (feature.properties['Score'] >= 0.082000 && feature.properties['Score'] <= 0.357600 ) {
+                return {
+                pane: 'pane_VulnerabilityScore_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,255,255,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Score'] >= 0.357600 && feature.properties['Score'] <= 0.417600 ) {
+                return {
+                pane: 'pane_VulnerabilityScore_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,191,191,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Score'] >= 0.417600 && feature.properties['Score'] <= 0.487400 ) {
+                return {
+                pane: 'pane_VulnerabilityScore_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,128,128,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Score'] >= 0.487400 && feature.properties['Score'] <= 0.550800 ) {
+                return {
+                pane: 'pane_VulnerabilityScore_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,64,64,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Score'] >= 0.550800 && feature.properties['Score'] <= 0.991000 ) {
+                return {
+                pane: 'pane_VulnerabilityScore_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,0,0,1.0)',
+                interactive: true,
+            }
+            }
+        }
+        map.createPane('pane_VulnerabilityScore_5');
+        map.getPane('pane_VulnerabilityScore_5').style.zIndex = 405;
+        map.getPane('pane_VulnerabilityScore_5').style['mix-blend-mode'] = 'normal';
+        var layer_VulnerabilityScore_5 = new L.geoJson(json_VulnerabilityScore_5, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_VulnerabilityScore_5',
+            layerName: 'layer_VulnerabilityScore_5',
+            pane: 'pane_VulnerabilityScore_5',
+            onEachFeature: pop_VulnerabilityScore_5,
+            style: style_VulnerabilityScore_5_0,
+        });
+        bounds_group.addLayer(layer_VulnerabilityScore_5);
+        map.addLayer(layer_VulnerabilityScore_5);
+        var baseMaps = {};
+        L.control.layers(baseMaps,{'Vulnerability Score<br /><table><tr><td style="text-align: center;"><img src="legend/VulnerabilityScore_5_008203580.png" /></td><td>0.082 - 0.358</td></tr><tr><td style="text-align: center;"><img src="legend/VulnerabilityScore_5_035804181.png" /></td><td>0.358 - 0.418</td></tr><tr><td style="text-align: center;"><img src="legend/VulnerabilityScore_5_041804872.png" /></td><td>0.418 - 0.487</td></tr><tr><td style="text-align: center;"><img src="legend/VulnerabilityScore_5_048705513.png" /></td><td>0.487 - 0.551</td></tr><tr><td style="text-align: center;"><img src="legend/VulnerabilityScore_5_055109914.png" /></td><td>0.551 - 0.991</td></tr></table><hr>': layer_VulnerabilityScore_5,'Population Density<br /><table><tr><td style="text-align: center;"><img src="legend/PopulationDensity_4_000470.png" /></td><td>0 - 0.047</td></tr><tr><td style="text-align: center;"><img src="legend/PopulationDensity_4_004700721.png" /></td><td>0.047 - 0.072</td></tr><tr><td style="text-align: center;"><img src="legend/PopulationDensity_4_007201142.png" /></td><td>0.072 - 0.114</td></tr><tr><td style="text-align: center;"><img src="legend/PopulationDensity_4_01140163.png" /></td><td>0.114 - 0.16</td></tr><tr><td style="text-align: center;"><img src="legend/PopulationDensity_4_01614.png" /></td><td>0.16 - 1</td></tr></table><hr>': layer_PopulationDensity_4,'Unemployment Rate<br />': layer_UnemploymentRate_3,'Healthy Food Index<br />': layer_HealthyFoodIndex_2,'Social Housing RGI<br /><table><tr><td style="text-align: center;"><img src="legend/SocialHousingRGI_1_0020.png" /></td><td>0 - 0.2</td></tr><tr><td style="text-align: center;"><img src="legend/SocialHousingRGI_1_02041.png" /></td><td>0.2 - 0.4</td></tr><tr><td style="text-align: center;"><img src="legend/SocialHousingRGI_1_04062.png" /></td><td>0.4 - 0.6</td></tr><tr><td style="text-align: center;"><img src="legend/SocialHousingRGI_1_06083.png" /></td><td>0.6 - 0.8</td></tr><tr><td style="text-align: center;"><img src="legend/SocialHousingRGI_1_0814.png" /></td><td>0.8 - 1</td></tr></table><hr>': layer_SocialHousingRGI_1,"OSM Standard": layer_OSMStandard_0,},{collapsed:false}).addTo(map);
+        setBounds();
+
+        </script>
+    </body>
+</html>
